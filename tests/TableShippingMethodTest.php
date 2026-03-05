@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace SilverShop\Shipping\Tests;
 
 use SilverStripe\Dev\SapphireTest;
@@ -8,26 +10,37 @@ use SilverShop\Shipping\ShippingPackage;
 use SilverShop\Shipping\Model\TableShippingRate;
 use SilverShop\Shipping\Model\TableShippingMethod;
 
-class TableShippingMethodTest extends SapphireTest
+final class TableShippingMethodTest extends SapphireTest
 {
     protected static $fixture_file = 'TableShippingMethod.yml';
 
     protected $fixtureclass = TableShippingMethod::class;
 
     protected $addressshipping;
+
     protected $weightshipping;
+
     protected $volumeshipping;
+
     protected $valueshipping;
+
     protected $quantityshipping;
+
     protected $nzaddress;
+
     protected $internationaladdress;
+
     protected $p0;
+
     protected $p1;
+
     protected $p2;
+
     protected $p3;
+
     protected $p4;
 
-    public function setup(): void
+    protected function setup(): void
     {
         parent::setUp();
 
@@ -37,13 +50,13 @@ class TableShippingMethodTest extends SapphireTest
         $this->valueshipping = $this->objFromFixture($this->fixtureclass, "value");
         $this->quantityshipping = $this->objFromFixture($this->fixtureclass, "quantity");
 
-        $this->nzaddress = new Address([
+        $this->nzaddress = Address::create([
             "Country" =>    "NZ",
             "State" =>      "Wellington",
             "PostalCode" => "6022"
         ]);
 
-        $this->internationaladdress = new Address([
+        $this->internationaladdress = Address::create([
             "Company" => 'Nildram Ltd',
             "Address" => 'Ardenham Court',
             "Address2" =>    'Oxford Road',
@@ -54,14 +67,14 @@ class TableShippingMethodTest extends SapphireTest
         ]);
 
         //create some package fixtures
-        $this->p0 = new ShippingPackage();
-        $this->p1 = new ShippingPackage(2.34, [0.5,1,2], ['value' => 2, 'quantity' => 3]);
-        $this->p2 = new ShippingPackage(17, [1,2,3], ['value' => 6, 'quantity' => 10]);
-        $this->p3 = new ShippingPackage(100, [12.33,51,30.1], ['value' => 1000, 'quantity' => 55]);
-        $this->p4 = new ShippingPackage(1000, [100,200,300], ['value' => 1000000, 'quantity' => 12412]);
+        $this->p0 = ShippingPackage::create();
+        $this->p1 = ShippingPackage::create(2.34, [0.5,1,2], ['value' => 2, 'quantity' => 3]);
+        $this->p2 = ShippingPackage::create(17, [1,2,3], ['value' => 6, 'quantity' => 10]);
+        $this->p3 = ShippingPackage::create(100, [12.33,51,30.1], ['value' => 1000, 'quantity' => 55]);
+        $this->p4 = ShippingPackage::create(1000, [100,200,300], ['value' => 1000000, 'quantity' => 12412]);
     }
 
-    public function testAddressTable()
+    public function testAddressTable(): void
     {
         $type = "address";
         $address = Address::create([
@@ -74,7 +87,7 @@ class TableShippingMethodTest extends SapphireTest
         $this->assertMatch($type, $this->p2, $address, 30);
         $this->assertMatch($type, $this->p4, $address, 30);
 
-        $address = new Address([
+        $address = Address::create([
             'Country' => 'NZ',
             'PostalCode' => '6000'
         ]);
@@ -90,11 +103,11 @@ class TableShippingMethodTest extends SapphireTest
         $this->assertMatch($type, $this->p4, $address, 0);
     }
 
-    public function testDefaultRate()
+    public function testDefaultRate(): void
     {
         $type = "address";
         $address = $this->internationaladdress;
-        $defaultrate = new TableShippingRate([
+        $defaultrate = TableShippingRate::create([
             "Rate" => 100
         ]);
         $defaultrate->write();
@@ -105,7 +118,7 @@ class TableShippingMethodTest extends SapphireTest
         $this->assertMatch($type, $this->p4, $address, 100);
     }
 
-    public function testInternationalRates()
+    public function testInternationalRates(): void
     {
         $address_int = $this->internationaladdress;
 
@@ -142,7 +155,7 @@ class TableShippingMethodTest extends SapphireTest
         $this->assertNoMatch($type, $this->p4, $address_int); //quantity = 12412
     }
 
-    public function testLocalRates()
+    public function testLocalRates(): void
     {
         $address_loc = $this->nzaddress;
 
@@ -179,17 +192,17 @@ class TableShippingMethodTest extends SapphireTest
         $this->assertNoMatch($type, $this->p4, $address_loc); //quantity = 12412
     }
 
-    protected function assertMatch($type, $package, $address, $amount)
+    protected function assertMatch(string $type, string $package, $address, $amount): void
     {
         $rate = $this->{$type . "shipping"}->calculateRate($package, $address);
 
-        $this->assertEquals($amount, $rate, "Check rate for package $package is $amount");
+        $this->assertEquals($amount, $rate, sprintf('Check rate for package %s is %s', $package, $amount));
     }
 
-    protected function assertNoMatch($type, $package, $address)
+    protected function assertNoMatch(string $type, string $package, $address): void
     {
         $rate = $this->{$type . "shipping"}->calculateRate($package, $address);
 
-        $this->assertNull($rate, "Check rate for package $package is not found");
+        $this->assertNull($rate, sprintf('Check rate for package %s is not found', $package));
     }
 }

@@ -1,7 +1,10 @@
 <?php
 
+declare(strict_types=1);
+
 namespace SilverShop\Shipping\Admin;
 
+use SilverStripe\Core\ArrayLib;
 use SilverStripe\Admin\ModelAdmin;
 use Symbiote\GridFieldExtensions\GridFieldAddNewMultiClass;
 use SilverStripe\Core\ClassInfo;
@@ -12,19 +15,18 @@ use SilverShop\Shipping\Model\ShippingMethod;
 use SilverStripe\Forms\GridField\GridFieldAddNewButton;
 use SilverStripe\Forms\GridField\GridFieldPrintButton;
 use SilverStripe\Forms\GridField\GridFieldExportButton;
-use SilverStripe\ORM\ArrayLib;
 
 class ShippingMethodAdmin extends ModelAdmin
 {
-    private static $url_segment = "shipping";
+    private static string $url_segment = "shipping";
 
-    private static $menu_title = "Shipping";
+    private static string $menu_title = "Shipping";
 
-    private static $menu_priority = 3;
+    private static int $menu_priority = 3;
 
-    private static $menu_icon = 'silvershop/shipping:images/shipping.png';
+    private static string $menu_icon = 'silvershop/shipping:images/shipping.png';
 
-    private static $managed_models = [
+    private static array $managed_models = [
         ShippingMethod::class,
         Warehouse::class
     ];

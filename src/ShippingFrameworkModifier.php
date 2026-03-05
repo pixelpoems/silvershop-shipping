@@ -1,14 +1,18 @@
 <?php
 
+declare(strict_types=1);
+
 namespace SilverShop\Shipping;
 
 use SilverShop\Model\Modifiers\OrderModifier;
 
 class ShippingFrameworkModifier extends OrderModifier
 {
-    private static $singular_name = 'Shipping';
+    private static string $table_name = 'ShippingFrameworkModifier';
 
-    public function value($incoming)
+    private static string $singular_name = 'Shipping';
+
+    public function value($incoming): int|float
     {
         $order = $this->Order();
         if ($order && $order->exists() && ($shipping = $order->ShippingMethod()) && $shipping->exists()) {
@@ -17,6 +21,7 @@ class ShippingFrameworkModifier extends OrderModifier
             $order->write();
             return $value;
         }
+
         return 0;
     }
 

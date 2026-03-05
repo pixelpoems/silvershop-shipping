@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace SilverShop\Shipping\Tasks;
 
 use SilverStripe\Core\Extension;
@@ -12,9 +14,9 @@ use SilverShop\Shipping\Tasks\PopulateTableShippingTask;
  */
 class PopulateShopTableShippingTask extends Extension
 {
-    public function beforePopulate()
+    public function beforePopulate(): void
     {
-        $task = new PopulateTableShippingTask();
+        $task = PopulateTableShippingTask::create();
         $task->run();
     }
 }

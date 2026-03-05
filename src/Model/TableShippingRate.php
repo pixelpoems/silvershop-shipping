@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace SilverShop\Shipping\Model;
 
 use SilverShop\Shipping\Model\TableShippingMethod;
@@ -10,7 +12,7 @@ use SilverShop\Shipping\Model\RegionRestriction;
  */
 class TableShippingRate extends RegionRestriction
 {
-    private static $db = [
+    private static array $db = [
         "WeightMin"   => "Decimal",
         "WeightMax"   => "Decimal",
         "VolumeMin"   => "Decimal",
@@ -22,11 +24,11 @@ class TableShippingRate extends RegionRestriction
         "Rate" => "Currency"
     ];
 
-    private static $has_one = [
+    private static array $has_one = [
         "ShippingMethod" => TableShippingMethod::class
     ];
 
-    private static $summary_fields = [
+    private static array $summary_fields = [
         'Country',
         'State',
         'City',
@@ -42,9 +44,9 @@ class TableShippingRate extends RegionRestriction
         'Rate'
     ];
 
-    private static $default_sort = "\"Country\" ASC, \"State\" ASC, \"City\" ASC, \"PostalCode\" ASC, \"Rate\" ASC";
+    private static string $default_sort = '"Country" ASC, "State" ASC, "City" ASC, "PostalCode" ASC, "Rate" ASC';
 
-    private static $table_name = 'SilverShop_TableShippingRate';
+    private static string $table_name = 'SilverShop_TableShippingRate';
 
     public function getCMSFields()
     {

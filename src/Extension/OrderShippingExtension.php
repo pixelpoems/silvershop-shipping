@@ -1,31 +1,35 @@
 <?php
 
+declare(strict_types=1);
+
 namespace SilverShop\Shipping\Extension;
 
-use SilverStripe\ORM\DataExtension;
+use SilverStripe\Core\Extension;
 use SilverShop\Shipping\ShippingPackage;
 use SilverShop\Shipping\ShippingEstimator;
 use SilverShop\Shipping\Model\ShippingMethod;
 use SilverShop\Shipping\Model\Zone;
 use Exception;
 
-class OrderShippingExtension extends DataExtension
+class OrderShippingExtension extends Extension
 {
-    private static $db = [
+    public $owner;
+
+    private static array $db = [
         'ShippingTotal' => 'Currency'
     ];
 
-    private static $has_one = [
+    private static array $has_one = [
         'ShippingMethod' => ShippingMethod::class
     ];
 
-    private static $casting = [
+    private static array $casting = [
         'TotalWithoutShipping' => 'Currency'
     ];
 
-    public function TotalWithoutShipping()
+    public function TotalWithoutShipping(): int|float
     {
-        return $this->owner->Total() - $this->owner->ShippingTotal;
+        return $this->getOwner()->Total() - $this->getOwner()->ShippingTotal;
     }
 
     /**
@@ -35,7 +39,7 @@ class OrderShippingExtension extends DataExtension
      */
     public function createShippingPackage($value = 0)
     {
-        $items = $this->owner->Items();
+        $items = $this->getOwner()->Items();
 
         if (!$items->exists()) {
             $package = ShippingPackage::create();
@@ -46,8 +50,9 @@ class OrderShippingExtension extends DataExtension
             $depth = $items->Sum('Depth', true);
 
             if (!$value) {
-                $value = $this->owner->SubTotal();
+                $value = $this->getOwner()->SubTotal();
             }
+
             $quantity = $items->Quantity();
 
             $package = ShippingPackage::create(
@@ -60,7 +65,7 @@ class OrderShippingExtension extends DataExtension
             );
         }
 
-        $this->owner->extend('updateShippingPackage', $package);
+        $this->getOwner()->extend('updateShippingPackage', $package);
 
         return $package;
     }
@@ -72,11 +77,10 @@ class OrderShippingExtension extends DataExtension
      */
     public function getShippingEstimates()
     {
-        $address = $this->owner->getShippingAddress();
-        $estimator = ShippingEstimator::create($this->owner, $address);
-        $estimates = $estimator->getEstimates();
+        $address = $this->getOwner()->getShippingAddress();
+        $estimator = ShippingEstimator::create($this->getOwner(), $address);
 
-        return $estimates;
+        return $estimator->getEstimates();
     }
 
     /**
@@ -85,28 +89,28 @@ class OrderShippingExtension extends DataExtension
      * @param $option - shipping option to set, and calculate shipping from
      * @return boolean sucess/failure of setting
      */
-    public function setShippingMethod(ShippingMethod $option)
+    public function setShippingMethod(ShippingMethod $option): bool
     {
-        $package = $this->owner->createShippingPackage();
+        $package = $this->getOwner()->createShippingPackage();
 
         if (!$package) {
             throw new Exception(_t("OrderShippingExtension.NoPackage", "Shipping package information not available"));
         }
 
-        $address = $this->owner->getShippingAddress();
+        $address = $this->getOwner()->getShippingAddress();
 
         if (!$address || !$address->exists() && $option->requiresAddress()) {
             throw new Exception(_t("OrderShippingExtension.NoAddress", "No address has been set"));
         }
 
-        $this->owner->ShippingTotal = $option->calculateRate($package, $address);
-        $this->owner->ShippingMethodID = $option->ID;
-        $this->owner->write();
+        $this->getOwner()->ShippingTotal = $option->calculateRate($package, $address);
+        $this->getOwner()->ShippingMethodID = $option->ID;
+        $this->getOwner()->write();
 
         return true;
     }
 
-    public function onSetBillingAddress($address)
+    public function onSetBillingAddress($address): static
     {
         if ($address) {
             Zone::cache_zone_ids($address);
@@ -115,7 +119,7 @@ class OrderShippingExtension extends DataExtension
         return $this;
     }
 
-    public function onSetShippingAddress($address)
+    public function onSetShippingAddress($address): static
     {
         if ($address) {
             Zone::cache_zone_ids($address);

@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace SilverShop\Shipping\Checkout\Step;
 
 use SilverShop\Checkout\Step\CheckoutStep;
@@ -16,12 +18,12 @@ use SilverShop\Shipping\Model\ShippingMethod;
  */
 class CheckoutStepShippingMethod extends CheckoutStep
 {
-    private static $allowed_actions = [
+    private static array $allowed_actions = [
         'shippingmethod',
         'ShippingMethodForm'
     ];
 
-    public function shippingmethod()
+    public function shippingmethod(): array
     {
         $form = $this->ShippingMethodForm();
         $cart = ShoppingCart::singleton()->current();
@@ -38,16 +40,16 @@ class CheckoutStepShippingMethod extends CheckoutStep
     /**
      * @return Form
      */
-    public function ShippingMethodForm()
+    public function ShippingMethodForm(): ?Form
     {
-        $order = $this->owner->Cart();
+        $order = $this->getOwner()->Cart();
 
         if (!$order) {
             return null;
         }
 
         $estimates = $order->getShippingEstimates();
-        $fields = new FieldList();
+        $fields = FieldList::create();
 
         if ($estimates->exists()) {
             // if there is only one option then automatically select the option
@@ -75,19 +77,17 @@ class CheckoutStepShippingMethod extends CheckoutStep
             );
         }
 
-        $actions = new FieldList(
-            new FormAction("setShippingMethod", _t('SilverShop\Checkout\Step\CheckoutStep.Continue', 'Continue'))
-        );
+        $actions = FieldList::create(FormAction::create("setShippingMethod", _t('SilverShop\Checkout\Step\CheckoutStep.Continue', 'Continue')));
 
-        $form = new Form($this->owner, "ShippingMethodForm", $fields, $actions);
-        $this->owner->extend('updateShippingMethodForm', $form);
+        $form = Form::create($this->getOwner(), "ShippingMethodForm", $fields, $actions);
+        $this->getOwner()->extend('updateShippingMethodForm', $form);
 
         return $form;
     }
 
-    public function setShippingMethod($data, $form)
+    public function setShippingMethod(array $data, $form)
     {
-        $order = $this->owner->Cart();
+        $order = $this->getOwner()->Cart();
         $option = null;
 
         if (isset($data['ShippingMethodID'])) {
@@ -98,12 +98,12 @@ class CheckoutStepShippingMethod extends CheckoutStep
             }
         }
 
-        $this->owner->extend('onSetShippingMethod', $order, $data, $form);
+        $this->getOwner()->extend('onSetShippingMethod', $order, $data, $form);
 
         // perform write to store changes
         $order->calculate();
         $order->write();
 
-        return $this->owner->redirect($this->NextStepLink());
+        return $this->getOwner()->redirect($this->NextStepLink());
     }
 }

@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace SilverShop\Shipping\Tests;
 
 use SilverStripe\Dev\SapphireTest;
@@ -7,18 +9,18 @@ use SilverShop\Shipping\Model\Warehouse;
 use SilverShop\Model\Address;
 use SilverStripe\Core\Config\Config;
 
-class WarehouseTest extends SapphireTest
+final class WarehouseTest extends SapphireTest
 {
     protected static $fixture_file = 'Warehouses.yml';
 
-    public function setup(): void
+    protected function setup(): void
     {
         Config::inst()->update(Address::class, 'enable_geocoding', false);
 
         parent::setUp();
     }
 
-    public function testClosestWarehouse()
+    public function testClosestWarehouse(): void
     {
         $warehouse = Warehouse::closest_to(
             $this->objFromFixture(Address::class, "customeraddress1")

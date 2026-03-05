@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace SilverShop\Shipping\Model;
 
 /**
@@ -10,9 +12,9 @@ namespace SilverShop\Shipping\Model;
  */
 class ZoneRegion extends RegionRestriction
 {
-    private static $has_one = [
+    private static array $has_one = [
         'Zone' => Zone::class
     ];
 
-    private static $table_name = 'SilverShop_ZoneRegion';
+    private static string $table_name = 'SilverShop_ZoneRegion';
 }

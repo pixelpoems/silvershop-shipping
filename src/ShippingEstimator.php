@@ -1,12 +1,15 @@
 <?php
 
+declare(strict_types=1);
+
 namespace SilverShop\Shipping;
 
+use SilverStripe\Model\List\ArrayList;
+use SilverStripe\ORM\DataList;
 use SilverStripe\Core\Injector\Injectable;
 use SilverShop\Shipping\Model\ShippingMethod;
 use SilverShop\Model\Order;
 use SilverShop\Model\Address;
-use SilverStripe\ORM\ArrayList;
 
 /**
  * Helper class for calculating rates for available shipping options.
@@ -16,18 +19,18 @@ class ShippingEstimator
 {
     use Injectable;
 
-    protected $order;
+    protected Order $order;
 
-    protected $address;
+    protected ?Address $address;
 
-    protected $estimates = null;
+    protected $estimates;
 
     protected $calculated = false;
 
     public function __construct(Order $order, Address $address = null)
     {
         $this->order = $order;
-        $this->address = $address ? $address : $order->getShippingAddress();
+        $this->address = $address instanceof Address ? $address : $order->getShippingAddress();
     }
 
     public function getEstimates()
@@ -38,7 +41,7 @@ class ShippingEstimator
 
         $total = $this->order->TotalWithoutShipping();
 
-        $output = new ArrayList();
+        $output = ArrayList::create();
         if ($options = $this->getShippingMethods()) {
             foreach ($options as $option) {
                 $rate = $option->getCalculator($this->order)->calculate($this->address, $total);
@@ -49,7 +52,7 @@ class ShippingEstimator
             }
         }
 
-        $output->sort("CalculatedRate", "ASC"); //sort by rate, lowest to highest
+        $output->sort(["CalculatedRate" => "ASC"]); //sort by rate, lowest to highest
         // cache estimates
         $this->estimates = $output;
         $this->calculated = true;
@@ -60,8 +63,8 @@ class ShippingEstimator
     /**
      * Get options that apply to package and location,
      */
-    public function getShippingMethods()
+    public function getShippingMethods(): DataList
     {
-        return ShippingMethod::get()->filter("Enabled", 1);
+        return ShippingMethod::get()->filter(["Enabled" => 1]);
     }
 }

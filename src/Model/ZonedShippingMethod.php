@@ -1,11 +1,12 @@
 <?php
 
+declare(strict_types=1);
+
 namespace SilverShop\Shipping\Model;
 
 use SilverShop\Shipping\ShippingPackage;
 use SilverShop\Model\Address;
 use SilverShop\Shipping\Model\Zone;
-use SilverStripe\ORM\DataObject;
 use SilverStripe\Forms\GridField\GridField;
 use SilverStripe\Forms\GridField\GridFieldConfig_RelationEditor;
 use SilverStripe\Forms\GridField\GridFieldDataColumns;
@@ -17,22 +18,22 @@ use SilverStripe\Forms\GridField\GridFieldDataColumns;
  */
 class ZonedShippingMethod extends ShippingMethod
 {
-    private static $defaults = [
+    private static array $defaults = [
         'Name' => 'Zoned Shipping',
         'Description' => 'Works out shipping from a pre-defined zone rates'
     ];
 
-    private static $has_many = [
+    private static array $has_many = [
         "Rates" => ZonedShippingRate::class
     ];
 
-    private static $table_name = 'SilverShop_ZonedShippingMethod';
+    private static string $table_name = 'SilverShop_ZonedShippingMethod';
 
-    private static $singular_name = 'Zoned shipping method';
+    private static string $singular_name = 'Zoned shipping method';
 
-    private static $plural_name = 'Zoned shipping methods';
+    private static string $plural_name = 'Zoned shipping methods';
 
-    public function calculateRate(ShippingPackage $package, Address $address)
+    public function calculateRate(ShippingPackage $package, Address $address): null
     {
         $rate = null;
         $ids = Zone::get_zones_for_address($address);
@@ -53,27 +54,28 @@ class ZonedShippingMethod extends ShippingMethod
         $emptyconstraint = [];
 
         foreach ($packageconstraints as $db => $pakval) {
-            $mincol = "\"SilverShop_ZonedShippingRate\" . \"{$db}Min\"";
-            $maxcol = "\"SilverShop_ZonedShippingRate\" . \"{$db}Max\"";
+            $mincol = sprintf('"SilverShop_ZonedShippingRate" . "%sMin"', $db);
+            $maxcol = sprintf('"SilverShop_ZonedShippingRate" . "%sMax"', $db);
             $constraintfilters[] = "(" .
-                "$mincol >= 0" .
-                " AND $mincol <= " . $package->{$pakval}() .
-                " AND $maxcol > 0" . //ignore constraints with maxvalue = 0
-                " AND $maxcol >= " . $package->{$pakval}() .
-                " AND $mincol < $maxcol" . //sanity check
+                ($mincol . ' >= 0') .
+                sprintf(' AND %s <= ', $mincol) . $package->{$pakval}() .
+                sprintf(' AND %s > 0', $maxcol) . //ignore constraints with maxvalue = 0
+                sprintf(' AND %s >= ', $maxcol) . $package->{$pakval}() .
+                sprintf(' AND %s < %s', $mincol, $maxcol) . //sanity check
             ")";
             //also include a special case where all constraints are empty
-            $emptyconstraint[] = "($mincol = 0 AND $maxcol = 0)";
+            $emptyconstraint[] = sprintf('(%s = 0 AND %s = 0)', $mincol, $maxcol);
         }
+
         $constraintfilters[] = "(" . implode(" AND ", $emptyconstraint) . ")";
 
         $filter = "(" . implode(") AND (", [
-            "\"ZonedShippingMethodID\" = " . $this->ID,
-            "\"ZoneID\" IN(" . implode(",", $ids) . ")", //zone restriction
+            '"ZonedShippingMethodID" = ' . $this->ID,
+            '"ZoneID" IN(' . implode(",", $ids) . ")", //zone restriction
             implode(" OR ", $constraintfilters) //metrics restriction
         ]) . ")";
 
-        if ($sr = ZonedShippingRate::get()->where($filter)->sort('Rate')->first()) {
+        if ($sr = ZonedShippingRate::get()->where($filter)->sort(['Rate' => 'ASC'])->first()) {
             $rate = $sr->Rate;
         }
 
@@ -101,13 +103,8 @@ class ZonedShippingMethod extends ShippingMethod
 
         $fields->fieldByName('Root')->removeByName("Rates");
         if ($this->isInDB()) {
-            $config = new GridFieldConfig_RelationEditor();
-            $gridField = new GridField(
-                "Rates",
-                "ZonedShippingRate",
-                $this->Rates(),
-                $config
-            );
+            $config = GridFieldConfig_RelationEditor::create();
+            $gridField = GridField::create("Rates", "ZonedShippingRate", $this->Rates(), $config);
 
             $config->getComponentByType(GridFieldDataColumns::class)
                 ->setDisplayFields($displayFieldsList);
@@ -118,10 +115,7 @@ class ZonedShippingMethod extends ShippingMethod
         return $fields;
     }
 
-    /**
-     * @return bool
-     */
-    public function requiresAddress()
+    public function requiresAddress(): bool
     {
         return true;
     }

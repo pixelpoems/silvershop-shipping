@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace SilverShop\Shipping\Model;
 
 use SilverStripe\ORM\DataObject;
@@ -7,20 +9,20 @@ use SilverShop\Model\Address;
 
 class Warehouse extends DataObject
 {
-    private static $db = [
+    private static array $db = [
         'Title' => 'Varchar(255)'
     ];
 
-    private static $has_one = [
+    private static array $has_one = [
         'Address' => Address::class
     ];
 
-    private static $summary_fields = [
+    private static array $summary_fields = [
         'Title',
         'Address.Title' => 'Address'
     ];
 
-    private static $table_name = 'SilverShop_Warehouse';
+    private static string $table_name = 'SilverShop_Warehouse';
 
     public function getCMSFields()
     {
@@ -33,13 +35,12 @@ class Warehouse extends DataObject
     /**
      * Get the closest warehouse to an address.
      *
-     * @param  Address $address
      * @return Warehouse
      */
     public static function closest_to(Address $address)
     {
         $warehouses = self::get()
-            ->where("\"AddressID\" IS NOT NULL");
+            ->where('"AddressID" IS NOT NULL');
         $closestwarehouse = null;
         $shortestdistance = null;
 

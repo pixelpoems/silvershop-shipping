@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace SilverShop\Shipping;
 
 use SilverStripe\Core\Injector\Injectable;
@@ -58,7 +60,7 @@ class ShippingPackage
         'd' => 'depth'
     ];
 
-    public function __construct($weight = 0, $dimensions = [], $options = [])
+    public function __construct($weight = 0, array $dimensions = [], $options = [])
     {
         $this->weight = $weight;
         //set via aliases
@@ -67,32 +69,35 @@ class ShippingPackage
                 $dimensions[$this->dimensionaliases[$key]] = $dimension;
             }
         }
+
         $d = array_merge($this->defaultdimensions, $dimensions);
         foreach ($this->defaultdimensions as $name => $dimension) {
             if (isset($d[$name])) {
                 $this->$name = (float)$d[$name]; //force float type for dimensions
             }
         }
+
         $o = array_merge($this->defaultoptions, $options);
         foreach ($this->defaultoptions as $name => $option) {
             if (isset($o[$name])) {
                 $this->$name = $o[$name];
             }
         }
+
         //force 0 values for anything below 0
         $zerochecks = array_merge(
             $this->defaultdimensions,
             ['value' => null, 'quantity' => null]
         );
 
-        foreach ($zerochecks as $dimension => $value) {
+        foreach (array_keys($zerochecks) as $dimension) {
             if ($this->$dimension < 0) {
                 $this->$dimension = 0;
             }
         }
     }
 
-    public function toArray()
+    public function toArray(): array
     {
         $data = [
             "weight" => $this->weight,
@@ -110,19 +115,20 @@ class ShippingPackage
     }
 
 
-    public function __toString()
+    public function __toString(): string
     {
         $out = "";
         foreach ($this->toArray() as $key => $value) {
             $out .= strtoupper($key) . $value;
         }
+
         return $out;
     }
 
     /**
      * Calculate total volume, based on given dimensions
      */
-    public function volume()
+    public function volume(): int|float
     {
         return $this->height * $this->width * $this->depth;
     }

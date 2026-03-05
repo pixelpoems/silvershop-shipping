@@ -1,9 +1,11 @@
 <?php
 
+declare(strict_types=1);
+
 namespace SilverShop\Shipping\Model;
 
+use SilverStripe\ORM\DataList;
 use SilverShop\Forms\RestrictionRegionCountryDropdownField;
-use SilverStripe\Core\Convert;
 use SilverStripe\Forms\TextField;
 use SilverStripe\ORM\DataObject;
 use SilverShop\Model\Address;
@@ -57,12 +59,12 @@ class RegionRestriction extends DataObject
      * TODO: Very specific functionality. Consider moving this to a separate module
      *
      * @param  string $postcode
-     * @return array
      */
-    public static function parse_uk_postcode($postcode)
+    public static function parse_uk_postcode($postcode): array
     {
         $postcode = str_replace(' ', '', $postcode); // remove any spaces;
-        $postcode = strtoupper($postcode); // force to uppercase;
+        $postcode = strtoupper($postcode);
+         // force to uppercase;
         $valid_postcode_exp = '/^(([A-PR-UW-Z]{1}[A-IK-Y]?)([0-9]?[A-HJKS-UW]?[ABEHMNPRVWXY]?|[0-9]?[0-9]?))\s?([0-9]{1}[ABD-HJLNP-UW-Z]{2})$/i';
 
         // set default output results (assuming invalid postcode):
@@ -77,30 +79,23 @@ class RegionRestriction extends DataObject
             $output['prefix'] = $prefix;
             $output['suffix'] = $suffix;
         }
+
         return $output;
     }
 
     /**
      * Produce a SQL filter to get matching RegionRestrictions to a given address
      *
-     * @param Address $address
      *
      */
-    public static function filteredByAddress(Address $address)
+    public static function filteredByAddress(Address $address): DataList
     {
-        $set = static::get()->filter(self::getAddressFilters($address));
-
-        return $set;
+        return static::get()->filter(self::getAddressFilters($address));
     }
 
-    /**
-     * @param Address $address
-     *
-     * @return array
-     */
-    public static function getAddressFilters(Address $address = null)
+    public static function getAddressFilters(Address $address = null): array
     {
-        if (!$address) {
+        if (!$address instanceof Address) {
             // no filters if no address.
             return [];
         }
@@ -148,12 +143,12 @@ class RegionRestriction extends DataObject
      * Useful because we are only interested in the wildcard,
      * and not sorting of other values.
      */
-    public static function wildcard_sort($field, $direction = 'ASC')
+    public static function wildcard_sort(string $field, $direction = 'ASC'): string
     {
-        return "CASE \"{$field}\" WHEN '*' THEN 1 ELSE 0 END $direction";
+        return sprintf("CASE \"%s\" WHEN '*' THEN 1 ELSE 0 END %s", $field, $direction);
     }
 
-    public function onBeforeWrite()
+    protected function onBeforeWrite()
     {
         //prevent empty data - '*' must be used
         foreach (self::$defaults as $field => $value) {
@@ -161,6 +156,7 @@ class RegionRestriction extends DataObject
                 $this->$field = $value;
             }
         }
+
         //TODO: prevent non-heirarichal entries, eg country = '*', then state = 'blah'
         parent::onBeforeWrite();
     }

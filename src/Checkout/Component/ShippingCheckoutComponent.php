@@ -1,19 +1,21 @@
 <?php
 
+declare(strict_types=1);
+
 namespace SilverShop\Shipping\Checkout\Component;
 
+use SilverStripe\Core\Validation\ValidationResult;
+use SilverStripe\Core\Validation\ValidationException;
 use SilverShop\Checkout\Component\CheckoutComponent;
 use SilverShop\Model\Order;
 use SilverShop\Shipping\Model\ShippingMethod;
 use SilverShop\ShopTools;
 use SilverStripe\Forms\FieldList;
 use SilverStripe\Forms\OptionsetField;
-use SilverStripe\ORM\ValidationResult;
-use SilverStripe\ORM\ValidationException;
 
 class ShippingCheckoutComponent extends CheckoutComponent
 {
-    public function getFormFields(Order $order)
+    public function getFormFields(Order $order): FieldList
     {
         $fields = FieldList::create();
         $estimates = $order->getShippingEstimates();
@@ -31,12 +33,12 @@ class ShippingCheckoutComponent extends CheckoutComponent
         return $fields;
     }
 
-    public function getRequiredFields(Order $order)
+    public function getRequiredFields(Order $order): array
     {
         return [];
     }
 
-    public function validateData(Order $order, array $data)
+    public function validateData(Order $order, array $data): bool
     {
         // We fixed the wrong call of ValdiationResult::error() which doesn't exist by using addError()
         //in $result->addError()
@@ -46,7 +48,7 @@ class ShippingCheckoutComponent extends CheckoutComponent
                 _t('ShippingCheckoutComponent.ShippingMethodNotProvidedMessage', "Shipping method not provided"),
                 _t('ShippingCheckoutComponent.ShippingMethodErrorCode', "ShippingMethod")
             );
-            throw new ValidationException($result);
+            throw ValidationException::create($result);
         }
 
         if (!ShippingMethod::get()->byID($data['ShippingMethodID'])) {
@@ -60,11 +62,11 @@ class ShippingCheckoutComponent extends CheckoutComponent
                     "ShippingMethod"
                 )
             );
-            throw new ValidationException($result);
+            throw ValidationException::create($result);
         }
     }
 
-    public function getData(Order $order)
+    public function getData(Order $order): array
     {
         $estimates = $order->getShippingEstimates();
         $method = count($estimates) === 1 ? $estimates->First() : ShopTools::getSession()->get("Checkout.ShippingMethod");
@@ -74,13 +76,14 @@ class ShippingCheckoutComponent extends CheckoutComponent
         ];
     }
 
-    public function setData(Order $order, array $data)
+    public function setData(Order $order, array $data): Order
     {
         $option = null;
         if (isset($data['ShippingMethodID'])) {
             $option = ShippingMethod::get()
                 ->byID((int)$data['ShippingMethodID']);
         }
+
         //assign option to order / modifier
         if ($option) {
             $order->setShippingMethod($option);

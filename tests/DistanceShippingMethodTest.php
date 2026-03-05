@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace SilverShop\Shipping\Tests;
 
 use SilverStripe\Dev\SapphireTest;
@@ -7,7 +9,7 @@ use SilverShop\Shipping\ShippingPackage;
 use SilverShop\Model\Address;
 use SilverShop\Shipping\Model\DistanceShippingMethod;
 
-class DistanceShippingMethodTest extends SapphireTest
+final class DistanceShippingMethodTest extends SapphireTest
 {
 
     protected static $fixture_file = [
@@ -15,7 +17,7 @@ class DistanceShippingMethodTest extends SapphireTest
         'Warehouses.yml'
     ];
 
-    public function testDistanceFare()
+    public function testDistanceFare(): void
     {
         $method = $this->objFromFixture(DistanceShippingMethod::class, "ds");
         $this->assertEquals(0, $method->getDistanceFare(9));
@@ -24,20 +26,20 @@ class DistanceShippingMethodTest extends SapphireTest
         $this->assertEquals(678, $method->getDistanceFare(999999));
     }
 
-    public function testCalculateRates()
+    public function testCalculateRates(): void
     {
         $method = $this->objFromFixture(DistanceShippingMethod::class, "ds");
         $this->assertEquals(
             234,
             $method->calculateRate(
-                new ShippingPackage(),
+                ShippingPackage::create(),
                 $this->objFromFixture(Address::class, "customeraddress1")
             )
         );
         $this->assertEquals(
             567,
             $method->calculateRate(
-                new ShippingPackage(),
+                ShippingPackage::create(),
                 $this->objFromFixture(Address::class, "customeraddress2")
             )
         );

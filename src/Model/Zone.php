@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace SilverShop\Shipping\Model;
 
 use SilverShop\ShopTools;
@@ -20,21 +22,21 @@ use SilverShop\Model\Address;
  */
 class Zone extends DataObject
 {
-    private static $db = [
+    private static array $db = [
         'Name' => 'Varchar',
         'Description' => 'Varchar',
     ];
 
-    private static $has_many = [
+    private static array $has_many = [
         'Regions' => ZoneRegion::class,
     ];
 
-    private static $summary_fields = [
+    private static array $summary_fields = [
         'Name',
         'Description',
     ];
 
-    private static $table_name = 'SilverShop_Zone';
+    private static string $table_name = 'SilverShop_Zone';
 
     /*
      * Returns a DataSet of matching zones
@@ -43,9 +45,10 @@ class Zone extends DataObject
     {
         $zones = ZoneRegion::filteredByAddress($address);
         $zoneIds = $zones->column('ZoneID');
-        if (empty($zoneIds)) {
+        if ($zoneIds === []) {
             return null;
         }
+
         return self::get()->byIDs($zoneIds);
     }
 
@@ -60,6 +63,7 @@ class Zone extends DataObject
             $session->set('MatchingZoneIDs', implode(',', $ids));
             return $ids;
         }
+
         $session->set('MatchingZoneIDs', null)->clear('MatchingZoneIDs');
         return null;
     }
@@ -67,12 +71,13 @@ class Zone extends DataObject
     /**
      * Get cached ids as array
      */
-    public static function get_zone_ids()
+    public static function get_zone_ids(): ?array
     {
         $session = ShopTools::getSession();
         if ($ids = $session->get('MatchingZoneIDs')) {
             return explode(',', $ids);
         }
+
         return null;
     }
 
@@ -87,8 +92,9 @@ class Zone extends DataObject
                 $this->Regions(),
                 GridFieldConfig_RelationEditor::create()
             );
-            $fields->addFieldsToTab('Root.Main', $regionsTable);
+            $fields->addFieldToTab('Root.Main', $regionsTable);
         }
+
         return $fields;
     }
 }

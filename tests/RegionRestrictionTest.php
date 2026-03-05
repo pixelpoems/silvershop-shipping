@@ -1,13 +1,15 @@
 <?php
 
+declare(strict_types=1);
+
 namespace SilverShop\Shipping\Tests;
 
+use SilverStripe\ORM\DataObject;
 use SilverShop\Model\Address;
-use SilverShop\Shipping\Model\RegionRestriction;
 use SilverStripe\Dev\SapphireTest;
 use SilverShop\Shipping\Tests\RegionRestrictionRate;
 
-class RegionRestrictionTest extends SapphireTest
+final class RegionRestrictionTest extends SapphireTest
 {
     protected static $fixture_file = [
         'RegionRestriction.yml',
@@ -18,7 +20,7 @@ class RegionRestrictionTest extends SapphireTest
         RegionRestrictionRate::class
     ];
 
-    public function testMatchLocal()
+    public function testMatchLocal(): void
     {
         $address = $this->objFromFixture(Address::class, "wnz6012");
         $rate = $this->getRate($address);
@@ -26,7 +28,7 @@ class RegionRestrictionTest extends SapphireTest
         $this->assertEquals(2, $rate->Rate);
     }
 
-    public function testMatchRegional()
+    public function testMatchRegional(): void
     {
         $address = $this->objFromFixture(Address::class, "wnz6022");
         $rate = $this->getRate($address);
@@ -34,7 +36,7 @@ class RegionRestrictionTest extends SapphireTest
         $this->assertEquals(10, $rate->Rate);
     }
 
-    public function testMatchNational()
+    public function testMatchNational(): void
     {
         $address = $this->objFromFixture(Address::class, "anz1010");
         $rate = $this->getRate($address);
@@ -42,27 +44,28 @@ class RegionRestrictionTest extends SapphireTest
         $this->assertEquals(50, $rate->Rate);
     }
 
-    public function testMatchDefault()
+    public function testMatchDefault(): void
     {
         //add default rate
         $default = RegionRestrictionRate::create([
             'Rate' => 100,
         ]);
         $default->write();
+
         $address = $this->objFromFixture(Address::class, "bukhp193eq");
         $rate = $this->getRate($address);
         $this->assertTrue((boolean)$rate);
         $this->assertEquals(100, $rate->Rate);
     }
 
-    public function testNoMatch()
+    public function testNoMatch(): void
     {
         $address = $this->objFromFixture(Address::class, "bukhp193eq");
         $rate = $this->getRate($address);
         $this->assertNull($rate);
     }
 
-    public function testMatchSQLEscaping()
+    public function testMatchSQLEscaping(): void
     {
         $address = Address::create()->update(
             [
@@ -84,8 +87,8 @@ class RegionRestrictionTest extends SapphireTest
         $this->assertTrue((boolean)$rate, "Rate with unescaped data found");
     }
 
-    public function getRate(Address $address)
+    public function getRate(Address $address): ?DataObject
     {
-        return RegionRestrictionRate::filteredByAddress($address)->sort('Rate', 'ASC')->first();
+        return RegionRestrictionRate::filteredByAddress($address)->sort(['Rate' => 'ASC'])->first();
     }
 }

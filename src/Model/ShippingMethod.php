@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace SilverShop\Shipping\Model;
 
 use SilverStripe\ORM\DataObject;
@@ -14,31 +16,31 @@ use SilverShop\Shipping\ShippingCalculator;
  */
 class ShippingMethod extends DataObject
 {
-    private static $db = [
+    private static array $db = [
         "Name" => "Varchar",
         "Description" => "Text",
         "Enabled" => "Boolean"
     ];
 
-    private static $casting = [
+    private static array $casting = [
         'Rate' => 'Currency'
     ];
 
-    private static $table_name = 'SilverShop_ShippingMethod';
+    private static string $table_name = 'SilverShop_ShippingMethod';
 
     /**
      * @var array Checked in ShippingMethodAdmin when adding methods
      */
-    private static $disable_methods = [];
+    private static array $disable_methods = [];
 
     protected $CalculatedRate;
 
-    public function getCalculator(Order $order)
+    public function getCalculator(Order $order): ShippingCalculator
     {
         return new ShippingCalculator($this, $order);
     }
 
-    public function calculateRate(ShippingPackage $package, Address $address)
+    public function calculateRate(ShippingPackage $package, Address $address): null
     {
         return null;
     }
@@ -75,10 +77,8 @@ class ShippingMethod extends DataObject
 
     /**
      * Some shipping methods might require an address present on the order.
-     *
-     * @return bool
      */
-    public function requiresAddress()
+    public function requiresAddress(): bool
     {
         return false;
     }

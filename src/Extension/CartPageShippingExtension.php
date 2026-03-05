@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace SilverShop\Shipping\Extension;
 
 use SilverStripe\Core\Extension;
@@ -8,13 +10,13 @@ use SilverStripe\Control\Controller;
 
 class CartPageShippingExtension extends Extension
 {
-    private static $allowed_actions = [
+    private static array $allowed_actions = [
         'ShippingEstimateForm'
     ];
 
-    public function ShippingEstimateForm()
+    public function ShippingEstimateForm(): ShippingEstimateForm
     {
-        return new ShippingEstimateForm($this->owner);
+        return ShippingEstimateForm::create($this->getOwner());
     }
 
     public function ShippingEstimates()
