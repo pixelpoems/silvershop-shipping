@@ -47,7 +47,7 @@ class TableShippingMethod extends ShippingMethod
     /**
      * Find the appropriate shipping rate from stored table range metrics.
      */
-    public function calculateRate(ShippingPackage $package, Address $address): null
+    public function calculateRate(ShippingPackage $package, Address $address): ?float
     {
         $rate = null;
         $packageconstraints = [
@@ -94,9 +94,7 @@ class TableShippingMethod extends ShippingMethod
         $tr = $tr->sort('LENGTH("SilverShop_RegionRestriction"."PostalCode") DESC, "SilverShop_TableShippingRate"."Rate" ASC')
             ->first();
 
-        if ($tr) {
-            $rate = $tr->Rate;
-        }
+        $rate = $tr?->Rate;
 
         $this->CalculatedRate = $rate;
 

@@ -19,7 +19,7 @@ class ShippingFrameworkModifier extends OrderModifier
             $value = $shipping->getCalculator($order)->calculate(null, $incoming);
             $order->ShippingTotal = $value;
             $order->write();
-            return $value;
+            return $value ?? 0;
         }
 
         return 0;

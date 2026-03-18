@@ -40,7 +40,7 @@ class ShippingMethod extends DataObject
         return new ShippingCalculator($this, $order);
     }
 
-    public function calculateRate(ShippingPackage $package, Address $address): null
+    public function calculateRate(ShippingPackage $package, Address $address): ?float
     {
         return null;
     }
