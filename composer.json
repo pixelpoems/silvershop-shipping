@@ -11,15 +11,8 @@
         "silvershop"
     ],
     "license": "BSD-3-Clause",
-    "repositories": [
-        {
-            "type": "vcs",
-            "url": "https://github.com/pixelpoems/silvershop-core.git",
-            "no-api": true
-        }
-    ],
     "require": {
-        "silvershop/core": "dev-cms6",
+        "silvershop/core": "^6",
         "silvershop/silverstripe-hasonefield": "^5.0"
     },
     "authors": [
